@@ -16,13 +16,23 @@ public class BST<Key extends Comparable<Key>, Value> {
         private Node parent;
         private int N;
 
-        private int height;
+        public int getH() {
+            return H;
+        }
+
+        public void setH(int h) {
+            this.H = h;
+        }
+
+        private int H;
 
         public Node(Key key, Value val, int N) {
             this.key = key;
             this.val = val;
             this.N = N;
         }
+        
+        public Node(Key)
 
         public Key getKey() {
             return key;
@@ -295,14 +305,14 @@ public class BST<Key extends Comparable<Key>, Value> {
     }
 
     public int getHeightByIter() {
-        return height(root);
+        return getHeightByIter(root);
     }
 
     private int getHeightByIter(Node x) {
         if (x==null) return 0;
         int leftH = getHeightByIter(x.left);
         int rightH = getHeightByIter(x.right);
-        int maxH = leftH > rightH ? leftH : rightH;
+        int maxH = Math.max(leftH, rightH);
         return maxH+1;
     }
 }
