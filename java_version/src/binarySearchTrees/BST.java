@@ -16,6 +16,8 @@ public class BST<Key extends Comparable<Key>, Value> {
         private Node parent;
         private int N;
 
+        private int height;
+
         public Node(Key key, Value val, int N) {
             this.key = key;
             this.val = val;
@@ -290,5 +292,17 @@ public class BST<Key extends Comparable<Key>, Value> {
         if (cmpLo < 0) keys(x.left, queue, lo, hi);
         if (cmpLo <= 0 && cmpHi >= 0) queue.add(x.key);
         if (cmpHi > 0) keys(x.right, queue, lo, hi);
+    }
+
+    public int getHeightByIter() {
+        return height(root);
+    }
+
+    private int getHeightByIter(Node x) {
+        if (x==null) return 0;
+        int leftH = getHeightByIter(x.left);
+        int rightH = getHeightByIter(x.right);
+        int maxH = leftH > rightH ? leftH : rightH;
+        return maxH+1;
     }
 }
