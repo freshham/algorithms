@@ -17,15 +17,5 @@ public class Main {
 //            System.out.println("i = " + i);
 //        }
 
-        BST tree = new BST();
-        for (int i = 0; i < 10; i++) {
-            tree.put(i, i * 10);
-        }
-        System.out.println(tree.get(5));
-        System.out.println(tree.min());
-        System.out.println(tree.max());
-        for (Object k : tree.keys()) {
-            System.out.println(k + ":" + tree.get((int)k));
-        }
     }
 }

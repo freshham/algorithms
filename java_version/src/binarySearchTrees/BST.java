@@ -1,13 +1,20 @@
 package binarySearchTrees;
 
+import test.TestBST;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class BST<Key extends Comparable<Key>, Value> {
+    public Node getRoot() {
+        return root;
+    }
+
     /**
      * binary search tree
      */
     private Node root;
+    private Node cachedNode;
 
     private class Node {
         private Key key;
@@ -31,8 +38,13 @@ public class BST<Key extends Comparable<Key>, Value> {
             this.val = val;
             this.N = N;
         }
-        
-        public Node(Key)
+
+        public Node(Key key, Value val, int N, int H) {
+            this.key = key;
+            this.val = val;
+            this.N = N;
+            this.H = H;
+        }
 
         public Key getKey() {
             return key;
@@ -92,6 +104,20 @@ public class BST<Key extends Comparable<Key>, Value> {
         }
     }
 
+    public Value getByLoop(Key key) {
+        return getByLoop(root, key);
+    }
+
+    private Value getByLoop(Node x, Key key) {
+        while (x != null) {
+            int cmp = key.compareTo(x.key);
+            if (cmp == 0) return x.val;
+            else if (cmp < 0) x = x.left;
+            else x = x.right;
+        }
+        return null;
+    }
+
     /**
      * searching Node by key, and update Node.val to val, if not found, append new Node with val
      *
@@ -103,7 +129,7 @@ public class BST<Key extends Comparable<Key>, Value> {
     }
 
     private Node put(Node x, Key key, Value val) {
-        if (x == null) return new Node(key, val, 1);
+        if (x == null) return new Node(key, val, 1, 1);
         int cmp = key.compareTo(x.key);
         if (cmp < 0) {
             x.left = put(x.left, key, val);
@@ -113,6 +139,7 @@ public class BST<Key extends Comparable<Key>, Value> {
             x.right.parent = x;
         } else x.val = val;
         x.N = size(x.left) + size(x.right) + 1;
+        x.H = Math.max(getHeightByH(x.left), getHeightByH(x.right)) + 1;
         return x;
     }
 
@@ -165,6 +192,12 @@ public class BST<Key extends Comparable<Key>, Value> {
         return res;
     }
 
+    /**
+     * find the node with the min key greater or equal to key
+     *
+     * @param key
+     * @return
+     */
     public Node ceiling(Key key) {
         return ceiling(root, key);
     }
@@ -180,6 +213,11 @@ public class BST<Key extends Comparable<Key>, Value> {
         return res;
     }
 
+    /**
+     * find out the first K node inorder
+     * @param k
+     * @return
+     */
     public Node select(int k) {
         return select(root, k);
     }
@@ -212,7 +250,7 @@ public class BST<Key extends Comparable<Key>, Value> {
         if (x == null) return null;
         if (x.left == null) return x.right;
         x.left = deleteMin(x.left);
-        x.left.parent = x;
+        if (x.left != null) x.left.parent = x;
         x.N = size(x.left) + size(x.right) + 1;
         return x;
     }
@@ -225,7 +263,7 @@ public class BST<Key extends Comparable<Key>, Value> {
         if (x == null) return null;
         if (x.right == null) return x.left;
         x.right = deleteMax(x.right);
-        x.right.parent = x;
+        if (x.right != null) x.right.parent = x;
         x.N = size(x.left) + size(x.right) + 1;
         return x;
     }
@@ -283,6 +321,7 @@ public class BST<Key extends Comparable<Key>, Value> {
 
     /**
      * in-order traversal
+     *
      * @return
      */
     public Iterable<Key> keys() {
@@ -309,10 +348,94 @@ public class BST<Key extends Comparable<Key>, Value> {
     }
 
     private int getHeightByIter(Node x) {
-        if (x==null) return 0;
+        if (x == null) return 0;
         int leftH = getHeightByIter(x.left);
         int rightH = getHeightByIter(x.right);
         int maxH = Math.max(leftH, rightH);
-        return maxH+1;
+        return maxH + 1;
+    }
+
+    public int getHeightByH() {
+        return getHeightByH(root);
+    }
+
+    private int getHeightByH(Node x) {
+        if (x == null) return 0;
+        return x.H;
+    }
+
+    public double avgCompares() {
+        return totalCompares(root) / size(root);
+    }
+
+    private double totalCompares(Node x) {
+        if (x == null) return 0;
+        return totalCompares(x.left) + size(x.left) + totalCompares(x.right) + size(x.right) + 1;
+    }
+
+    /**
+     * get by cache, exercise 3.2.28
+     */
+    public Value getWithCache(Key k) {
+        if (cachedNode != null && k == cachedNode.key) {
+            return cachedNode.val;
+        } else {
+            cachedNode = new Node(k, get(k), 1);
+            return cachedNode.val;
+        }
+    }
+
+    /**
+     * exercise 3.2.29, isBinaryTree check
+     * check whether a tree is really a BST or not
+     * comparing the total Node count with N in root Node
+     */
+    public boolean isBinaryTree(Node x) {
+        if (x == null) return false;
+        int total_cnt = countSubTreeNodes(x);
+        return total_cnt == size(x);
+    }
+
+    private int countSubTreeNodes(Node x) {
+        if (x == null) return 0;
+        int cnt = 1;
+        int left_cnt = countSubTreeNodes(x.left);
+        int right_cnt = countSubTreeNodes(x.right);
+        cnt += left_cnt + right_cnt;
+        return cnt;
+    }
+
+    /**
+     * check whether a BST is in ordered
+     * @param x
+     * @param min
+     * @param max
+     * @return
+     */
+    public boolean isOrdered(Node x, Key min, Key max) {
+        boolean left_flag;
+        boolean right_flag;
+        if (x == null) return false;
+        // iter check left subtree
+        if (x.left != null) {
+            int cmp = x.key.compareTo(x.left.key);
+            if (cmp <= 0) return false;
+            left_flag = isOrdered(x.left, min, max);
+        } else {
+            left_flag = true;
+            int cmp = x.key.compareTo(min);
+            if (cmp != 0) return false;
+        }
+        // iter check right subtree
+        if (x.right != null) {
+            int cmp = x.key.compareTo(x.right.key);
+            if (cmp > 0) return false;
+            right_flag = isOrdered(x.right, min, max);
+        } else {
+            right_flag = true;
+            int cmp = x.key.compareTo(max);
+            if (cmp != 0) return false;
+        }
+        return left_flag && right_flag;
     }
 }
